@@ -8,28 +8,34 @@ import (
 var db *gorm.DB
 
 type Site struct{
-	gorm.Model
 	Hostip string
 	Domain string
-	// Files []File
+	Files []File
+	LastSeen int64 `gorm:"autoUpdateTime:milli"`
+}
+
+type Reponse struct{
+	Site Site
+	Status string
 }
 
 type File struct{
-	gorm.Model
 	Name string
 	URL string
-	// SiteId Site
+	SiteId Site
+	LastSeen int64 `gorm:"autoUpdateTime:milli"`
 }
 
 func init() {
 	config.Connect()
 	db = config.GetDB()
 	db.AutoMigrate(&Site{})
+	db.AutoMigrate(&File{})
 }
 
-func Sites() []Site {
+func Sites(byDomain string) []Site {
 	var Sites []Site
-	db.Find(&Sites)
+	db.Where("domain LIKE ?",byDomain).Find(&Sites)
 	return Sites
 }
 
